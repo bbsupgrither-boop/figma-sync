@@ -1,18 +1,19 @@
-# минимальный образ Node
 FROM node:20-alpine
 
-# рабочая директория
 WORKDIR /app
 
-# сначала зависимости
+# Копируем манифесты (lock-файл может отсутствовать)
 COPY package*.json ./
-RUN npm ci --omit=dev
 
-# а теперь исходники
+# Если есть package-lock.json → npm ci, иначе → npm install
+RUN if [ -f package-lock.json ]; then \
+      npm ci --omit=dev; \
+    else \
+      npm install --omit=dev; \
+    fi
+
+# Теперь исходники
 COPY . .
 
-# подсказка о порте (Railway сам передаст PORT в контейнер)
 EXPOSE 3000
-
-# запуск
 CMD ["npm","start"]
